@@ -11,6 +11,7 @@ import {
   Flex,
   useToast,
   Tooltip,
+  Button,
 } from '@chakra-ui/react';
 import axios, { AxiosRequestConfig, CancelTokenSource } from 'axios';
 import {
@@ -21,6 +22,7 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useRef
 } from 'react';
 import {
   FieldError,
@@ -70,6 +72,7 @@ const FileInputBase: ForwardRefRenderFunction<
 
   const handleImageUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+
       if (!event.target.files?.length) {
         return;
       }
@@ -132,6 +135,9 @@ const FileInputBase: ForwardRefRenderFunction<
       setCancelToken(null);
     }
   }, [cancelToken, error, isSending]);
+
+
+  const inputFile = useRef(null);
 
   return (
     <FormControl isInvalid={!!error}>
@@ -200,10 +206,12 @@ const FileInputBase: ForwardRefRenderFunction<
                   justifyContent="center"
                   flexDir="column"
                 >
-                  <Icon as={FiPlus} w={14} h={14} />
-                  <Text as="span" pt={2} textAlign="center">
-                    Adicione sua imagem
-                  </Text>
+
+                    <Icon as={FiPlus} onClick={() => inputFile.current.click()} w={14} h={14} />
+                    <Text as="span" pt={2} textAlign="center">
+                      Adicione sua imagem
+                    </Text>
+
                 </Flex>
               </Box>
             )}
@@ -215,7 +223,7 @@ const FileInputBase: ForwardRefRenderFunction<
           id={name}
           name={name}
           onChange={handleImageUpload}
-          ref={ref}
+          ref={inputFile}
           type="file"
           style={{
             display: 'none',
