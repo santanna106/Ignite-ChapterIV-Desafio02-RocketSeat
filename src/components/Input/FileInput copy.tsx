@@ -11,6 +11,7 @@ import {
   Flex,
   useToast,
   Tooltip,
+  Button,
 } from '@chakra-ui/react';
 import axios, { AxiosRequestConfig, CancelTokenSource } from 'axios';
 import {
@@ -21,6 +22,7 @@ import {
   forwardRef,
   useCallback,
   useEffect,
+  useRef
 } from 'react';
 import {
   FieldError,
@@ -68,8 +70,32 @@ const FileInputBase: ForwardRefRenderFunction<
     {} as CancelTokenSource
   );
 
+
+  const getBase64 = file => {
+    return new Promise(resolve => {
+      let fileInfo;
+      let baseURL = "";
+      // Make new FileReader
+      let reader = new FileReader();
+
+      // Convert the file to base64 text
+      reader.readAsDataURL(file);
+
+      // on reader load somthing...
+      reader.onload = () => {
+        // Make a fileInfo Object
+        console.log("Called", reader);
+        baseURL = reader.result;
+        console.log(baseURL);
+        resolve(baseURL);
+      };
+      console.log(fileInfo);
+    });
+  };
+
   const handleImageUpload = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+
       if (!event.target.files?.length) {
         return;
       }
@@ -79,13 +105,16 @@ const FileInputBase: ForwardRefRenderFunction<
       setError('image', null);
       setIsSending(true);
 
-      await onChange(event);
+
+
+      //await onChange(event);
       trigger('image');
 
       const formData = new FormData();
+      let img =  event.target.files[0];
 
-      formData.append(event.target.name, event.target.files[0]);
-      formData.append('key', process.env.NEXT_PUBLIC_IMGBB_API_KEY);
+      formData.set('key', process.env.NEXT_PUBLIC_IMGBB_API_KEY);
+      formData.append('image', img);
 
       const { CancelToken } = axios;
       const source = CancelToken.source();
@@ -132,6 +161,9 @@ const FileInputBase: ForwardRefRenderFunction<
       setCancelToken(null);
     }
   }, [cancelToken, error, isSending]);
+
+
+  const inputFile = useRef(null);
 
   return (
     <FormControl isInvalid={!!error}>
@@ -200,10 +232,12 @@ const FileInputBase: ForwardRefRenderFunction<
                   justifyContent="center"
                   flexDir="column"
                 >
-                  <Icon as={FiPlus} w={14} h={14} />
-                  <Text as="span" pt={2} textAlign="center">
-                    Adicione sua imagem
-                  </Text>
+
+                    <Icon as={FiPlus} onClick={() => inputFile.current.click()} w={14} h={14} />
+                    <Text as="span" pt={2} textAlign="center">
+                      Adicione sua imagem
+                    </Text>
+
                 </Flex>
               </Box>
             )}
@@ -215,7 +249,7 @@ const FileInputBase: ForwardRefRenderFunction<
           id={name}
           name={name}
           onChange={handleImageUpload}
-          ref={ref}
+          ref={inputFile}
           type="file"
           style={{
             display: 'none',
